@@ -4,6 +4,9 @@
 #include "Wire.h"
 #include <SakuraIO.h>
 
+#define STARTUP_WAIT 15*60
+#define DATASEND_WAIT 60
+
 SakuraIO_I2C sakuraio;
 uint32_t cnt = 0;
 
@@ -22,6 +25,11 @@ void setup() {
     delay(1000);
   }
   Serial.println("");
+
+  // Startup wait
+  for (long i = 0; i < STARTUP_WAIT; i++) {
+    delay(1000);
+  }
 }
 
 void loop() {
@@ -29,6 +37,9 @@ void loop() {
 
   // Get sensor value
   float val = gas.measure_CH4();
+  if (val > 20000.0) {
+    val = 20000.0;
+  }
 
   // Sensor value outputs to serial
   Serial.print(cnt);
@@ -49,7 +60,11 @@ void loop() {
   }
 
   sakuraio.send();
-  delay(5000);
+
+  // delay 60 sec
+  for (long i = 0; i < DATASEND_WAIT; i++) {
+    delay(1000);
+  }
 
   uint8_t available;
   uint8_t queued;
